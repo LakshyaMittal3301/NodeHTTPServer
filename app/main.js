@@ -7,11 +7,20 @@ class HTTPRequest{
     response;
 
     constructor(req){
-        let startLine = req.split('\r\n')[0];
+        let lines = req.split('\r\n');
+        let startLine = lines[0];
+        let hostLine = lines[1];
+        let userAgentLine = lines[2];
+
         let arr = startLine.split(' ');
         this.httpMethod = arr[0];
         this.path = arr[1];
         this.httpVersion = arr[2];
+        
+        this.host = hostLine.split(' ')[1];
+
+        this.userAgent = userAgentLine.split(' ')[1];
+
         return this;
     }
     
@@ -30,7 +39,10 @@ class HTTPRequest{
             this.response = `${this.httpVersion} 200 OK\r\n\r\n`;
         } else if(path[0] == 'echo'){
             this.echoResource();
-        }else{
+        }else if(path[0] == 'user-agent'){
+            this.userAgentResource();
+        }
+        else{
             this.response = `${this.httpVersion} 404 Not Found\r\n\r\n`;
         }
     }
@@ -49,6 +61,15 @@ class HTTPRequest{
         this.response = response;
     }
 
+    userAgentResource(){
+        let message = this.userAgent;
+        let response = `${this.httpVersion} 200 OK\r\n`;
+        response += `Content-Type: text/plain\r\n`;
+        response += `Content-Length: ${message.length}\r\n`;
+        response += `\r\n`;
+        response += `${message}\r\n`;
+        this.response = response;
+    }
 
 };
 
@@ -62,7 +83,7 @@ const server = net.createServer((socket) => {
 
         let httpObject = new HTTPRequest(data.toString());
         let response = httpObject.getResponse();
-        console.log(response);
+        console.log(`Response to client: ${response}`);
         socket.write(response);
 
         socket.end();
