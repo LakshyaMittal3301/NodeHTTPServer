@@ -2,30 +2,52 @@ const net = require("net");
 const PORT = 4221;
 const LOCALHOST = 'localhost';
 
-function parseHTTPRequest(req){
-    let startLine = req.split('\r\n')[0];
-    let arr = startLine.split(' ');
-    this.httpMethod = arr[0];
-    this.path = arr[1];
-    this.httpVersion = arr[2];
-    return this;
-}
+class HTTPRequest{
+    
+    response;
 
-function handleHTTPRequest(httpObject){
-    let response = "";
-    if(!httpObject) return response;
-    switch(httpObject.httpMethod){
-        case 'GET':
-            if(httpObject.path == '/'){
-                response = `${httpObject.httpVersion} 200 OK\r\n\r\n`;
-            }else{
-                response = `${httpObject.httpVersion} 404 Not Found\r\n\r\n`;
-            }
-            break; 
+    constructor(req){
+        let startLine = req.split('\r\n')[0];
+        let arr = startLine.split(' ');
+        this.httpMethod = arr[0];
+        this.path = arr[1];
+        this.httpVersion = arr[2];
+        return this;
     }
-    return response;
+    
+    getResponse(){
+        switch(this.httpMethod){
+            case 'GET':
+                handleGet();
+                break; 
+        }
+        return this.response;
+    }
+    
+    handleGet(){
+        let path = parseHTTPPath(this.path);
+        if(path[0] == ''){
+            response = `${this.httpVersion} 200 OK\r\n\r\n`;
+        } else if(path[0] == 'echo'){
+            echoResource(path[1]);
+        }
+    }
 
-}
+    parseHTTPPath(path){
+        return path.split('/').slice(1);
+    }
+
+    echoResource(message){
+        let response = `${this.httpVersion} 200 OK\r\n`;
+        response += `Content-Type: text/plain\r\n`;
+        response += `Content-Length: ${message.length}\r\n`;
+        response += `\r\n`;
+        response += `${message}\r\n`;
+        this.response = response;
+    }
+
+
+};
 
 // You can use print statements as follows for debugging, they'll be visible when running tests.
 console.log("Logs from your program will appear here!");
@@ -35,7 +57,8 @@ const server = net.createServer((socket) => {
     socket.on('data', (data) => {
         console.log(`Received data: ${data}`);
 
-        let response = handleHTTPRequest(parseHTTPRequest(data.toString()));
+        let httpObject = new HTTPRequest(data.toString());
+        let response = httpObject.getResponse();
         socket.write(response);
 
         socket.end();
