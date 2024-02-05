@@ -11,11 +11,10 @@ const server = net.createServer((socket) => {
         console.log(`Received data: ${data}`);
         let response = "HTTP/1.1 200 OK\r\n\r\n";
         socket.write(response);
-        socket.end();
-    })
+    });
     
     socket.on("close", () => {
-        console.log('Closing the socket and ending the server');
+        console.log('Closing the socket');
         socket.end();
   });
 });
