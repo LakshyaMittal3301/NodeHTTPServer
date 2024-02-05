@@ -11,6 +11,8 @@ class HTTPRequest{
 	headers;
 	body;
 
+    directoryPath;
+
 	readHeaderLine(line){
 		let headerKey = "";
 		let headerVal = "";
@@ -22,16 +24,18 @@ class HTTPRequest{
 		return {headerKey, headerVal};
 	}
 
-	constructor(req){
-		this.headers = {};
-		let lines = req.split('\r\n');
-		let startLine = lines[0];
+	constructor(req, directoryPath){
+        this.directoryPath = directoryPath;
 
+        let lines = req.split('\r\n');
+		let startLine = lines[0];
+        
 		let arr = startLine.split(' ');
 		this.httpMethod = arr[0];
 		this.path = arr[1];
 		this.httpVersion = arr[2];
-
+        
+		this.headers = {};
 		let i = 1;
 		while(lines[i] !== ''){
 			console.log('Line number: ', i, ', line: ', lines[i]);
@@ -112,7 +116,7 @@ class HTTPRequest{
 
 	getFilesResource(){
 		let fileName = this.path.slice(7);
-		let filePath = Path.join(directoryPath, fileName);
+		let filePath = Path.join(this.directoryPath, fileName);
 		if(!fs.existsSync(filePath)){
 			this.setResponseTo404();
 			return;
@@ -124,7 +128,7 @@ class HTTPRequest{
 
 	postFilesResource(){
 		let fileName = this.path.slice(7);
-		let filePath = Path.join(directoryPath, fileName);
+		let filePath = Path.join(this.directoryPath, fileName);
 		try{
 			let fd = fs.openSync(filePath, 'w');
 			fs.writeFileSync(fd, this.body);

@@ -21,7 +21,7 @@ const server = net.createServer((socket) => {
 	socket.on('data', (data) => {
 		console.log(`Received data: ${data}`);
 
-		let httpObject = new HTTPRequest(data.toString());
+		let httpObject = new HTTPRequest(data.toString(), directoryPath);
 		let response = httpObject.getResponse();
 		console.log(`Response to client: ${response}`);
 		socket.write(response);
