@@ -18,18 +18,18 @@ class HTTPRequest{
     getResponse(){
         switch(this.httpMethod){
             case 'GET':
-                handleGet();
+                this.handleGet();
                 break; 
         }
         return this.response;
     }
     
     handleGet(){
-        let path = parseHTTPPath(this.path);
+        let path = this.parseHTTPPath(this.path);
         if(path[0] == ''){
             response = `${this.httpVersion} 200 OK\r\n\r\n`;
         } else if(path[0] == 'echo'){
-            echoResource(path[1]);
+            this.echoResource(path[1]);
         }
     }
 
