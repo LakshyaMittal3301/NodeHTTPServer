@@ -35,9 +35,9 @@ const server = net.createServer((socket) => {
     socket.on('data', (data) => {
         console.log(`Received data: ${data}`);
 
-        let response = handleHTTPRequest(parseHTTPRequest(data));
+        let response = handleHTTPRequest(parseHTTPRequest(data.toString()));
         socket.write(response);
-        
+
         socket.end();
     });
     
