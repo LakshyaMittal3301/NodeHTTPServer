@@ -17,8 +17,10 @@ class HTTPRequest{
         this.path = arr[1];
         this.httpVersion = arr[2];
         
+        if(hostLine)
         this.host = hostLine.split(' ')[1];
 
+        if(userAgentLine)
         this.userAgent = userAgentLine.split(' ')[1];
 
         return this;
@@ -85,14 +87,27 @@ const server = net.createServer((socket) => {
         let response = httpObject.getResponse();
         console.log(`Response to client: ${response}`);
         socket.write(response);
-
-        socket.end();
     });
     
-    socket.on("close", () => {
-        console.log('Closing the socket');
+    socket.on('error', (err) => {
+        console.log(`Error occured: ${err.message}`);
+    });
+
+    socket.on('end', () => {
+        console.log("Socket connection ended");
         socket.end();
+    })
+
+    socket.on("close", (hadError) => {
+        if(hadError){
+            console.log('Closing the socket because of an error');
+        }
+        else{
+            console.log('Closing the socket successfully');
+        }
   });
 });
 
-server.listen(PORT, LOCALHOST);
+server.listen(PORT, LOCALHOST, () => {
+    console.log(`Listening on ${LOCALHOST}:${PORT}`);
+});
