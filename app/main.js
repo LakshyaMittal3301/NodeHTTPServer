@@ -30,6 +30,8 @@ class HTTPRequest{
             this.response = `${this.httpVersion} 200 OK\r\n\r\n`;
         } else if(path[0] == 'echo'){
             this.echoResource(path[1]);
+        }else{
+            this.response = `${this.httpVersion} 404 Not Found\r\n\r\n`;
         }
     }
 
