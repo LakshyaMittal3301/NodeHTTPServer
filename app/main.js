@@ -14,18 +14,19 @@ class HTTPRequest{
 	headers;
 	body;
 
-	#readHeaderLine(line){
+	readHeaderLine(line){
 		let headerKey = "";
 		let headerVal = "";
 		let i = 0;
 		while(line[i] !== ':') headerKey += line[i++];
 		i+=2;
 		while(i < line.length) headerVal  += line[i++];
-
+		console.log(headerKey, headerVal);
 		return {headerKey, headerVal};
 	}
 
 	constructor(req){
+		this.headers = {};
 		let lines = req.split('\r\n');
 		let startLine = lines[0];
 
@@ -34,9 +35,10 @@ class HTTPRequest{
 		this.path = arr[1];
 		this.httpVersion = arr[2];
 
-		let i = 0;
+		let i = 1;
 		while(lines[i] !== ''){
-			let { headerKey, headerVal } = this.#readHeaderLine(lines[i]);
+			console.log('Line number: ', i, ', line: ', lines[i]);
+			let { headerKey, headerVal } = this.readHeaderLine(lines[i]);
 			this.headers[headerKey] = headerVal;
 			i++;
 		}
@@ -127,12 +129,15 @@ class HTTPRequest{
 		let fileName = this.path.slice(7);
 		let filePath = Path.join(directoryPath, fileName);
 		try{
-			fs.writeFileSync(filePath, this.body);
+			let fd = fs.openSync(filePath, 'w');
+			fs.writeFileSync(fd, this.body);
+			console.log("Wrote to file successfully");
+			this.setResponseTo201();
 		}
 		catch(err){
 			console.log(`Error occured while writing to file with path ${filePath}: ${err}`);
+			this.setResponseTo404();
 		}
-		this.setResponseTo201();
 	}
 
 	setResponseToEmpty200(){
@@ -140,7 +145,7 @@ class HTTPRequest{
 	}
 
 	setResponseTo201(){
-		let response = `${this.httpVersion} 201 Created\r\n\r\n`;
+		this.response = `${this.httpVersion} 201 Created\r\n\r\n`;
 	}
 
 	setResponseTo404(){
