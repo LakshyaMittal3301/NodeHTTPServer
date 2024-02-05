@@ -88,6 +88,7 @@ const server = net.createServer((socket) => {
         console.log(`Response to client: ${response}`);
         socket.write(response);
 
+        socket.end();
     });
     
     socket.on('error', (err) => {
