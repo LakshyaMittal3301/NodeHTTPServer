@@ -29,7 +29,7 @@ class HTTPRequest{
         if(path[0] == ''){
             this.response = `${this.httpVersion} 200 OK\r\n\r\n`;
         } else if(path[0] == 'echo'){
-            this.echoResource(path[1]);
+            this.echoResource();
         }else{
             this.response = `${this.httpVersion} 404 Not Found\r\n\r\n`;
         }
@@ -39,7 +39,8 @@ class HTTPRequest{
         return path.split('/').slice(1);
     }
 
-    echoResource(message){
+    echoResource(){
+        let message = this.path.slice(6);
         let response = `${this.httpVersion} 200 OK\r\n`;
         response += `Content-Type: text/plain\r\n`;
         response += `Content-Length: ${message.length}\r\n`;
@@ -61,6 +62,7 @@ const server = net.createServer((socket) => {
 
         let httpObject = new HTTPRequest(data.toString());
         let response = httpObject.getResponse();
+        console.log(response);
         socket.write(response);
 
         socket.end();
