@@ -67,7 +67,8 @@ class HTTPRequest{
         this.setResponseToContent200(message, 'text/plain');
     }
 
-    getFilesResource(fileName){
+    getFilesResource(){
+        let fileName = this.path.slice(7);
         let filePath = Path.join(directoryPath, fileName);
         if(!fs.existsSync(filePath)){
             this.setResponseTo404();
@@ -101,6 +102,7 @@ let directoryPath;
     let flag = args[0].slice(2);
     if(flag === 'directory'){
         directoryPath = args[1];        
+        console.log("setting directory", directoryPath);
     }
 })(process.argv.slice(2));
 
@@ -113,6 +115,8 @@ const server = net.createServer((socket) => {
         let response = httpObject.getResponse();
         console.log(`Response to client: ${response}`);
         socket.write(response);
+
+        socket.end();
     });
     
     socket.on('error', (err) => {
