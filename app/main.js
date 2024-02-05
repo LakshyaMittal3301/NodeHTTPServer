@@ -1,6 +1,8 @@
 const net = require("net");
 const PORT = 4221;
 const LOCALHOST = 'localhost';
+const Path = require('path');
+const fs = require('fs');
 
 class HTTPRequest{
     
@@ -43,9 +45,11 @@ class HTTPRequest{
             this.echoResource();
         }else if(path[0] == 'user-agent'){
             this.userAgentResource();
+        }else if(path[0] == 'files'){
+            this.getFilesResource();
         }
         else{
-            this.response = `${this.httpVersion} 404 Not Found\r\n\r\n`;
+            this.setResponseTo404();
         }
     }
 
@@ -55,28 +59,50 @@ class HTTPRequest{
 
     echoResource(){
         let message = this.path.slice(6);
-        let response = `${this.httpVersion} 200 OK\r\n`;
-        response += `Content-Type: text/plain\r\n`;
-        response += `Content-Length: ${message.length}\r\n`;
-        response += `\r\n`;
-        response += `${message}\r\n`;
-        this.response = response;
+        this.setResponseToContent200(message, 'text/plain');
     }
 
     userAgentResource(){
         let message = this.userAgent;
-        let response = `${this.httpVersion} 200 OK\r\n`;
-        response += `Content-Type: text/plain\r\n`;
-        response += `Content-Length: ${message.length}\r\n`;
-        response += `\r\n`;
-        response += `${message}\r\n`;
-        this.response = response;
+        this.setResponseToContent200(message, 'text/plain');
     }
 
+    getFilesResource(fileName){
+        let filePath = Path.join(directoryPath, fileName);
+        if(!fs.existsSync(filePath)){
+            this.setResponseTo404();
+            return;
+        }
+        const data = fs.readFileSync(filePath);
+        this.setResponseToContent200(data, 'application/octet-stream'); 
+
+    }
+
+    setResponseTo404(){
+        this.response = `${this.httpVersion} 404 Not Found\r\n\r\n`;
+    }
+
+    setResponseToContent200(content, contentType){
+        let response = `${this.httpVersion} 200 OK\r\n`;
+        response += `Content-Type: ${contentType}\r\n`;
+        response += `Content-Length: ${content.length}\r\n`;
+        response += `\r\n`;
+        response += `${content}\r\n`;
+        this.response = response;
+    }
 };
 
 // You can use print statements as follows for debugging, they'll be visible when running tests.
 console.log("Logs from your program will appear here!");
+let directoryPath;
+
+(function initialize(args){
+    if(args.length == 0) return;
+    let flag = args[0].slice(2);
+    if(flag === 'directory'){
+        directoryPath = args[1];        
+    }
+})(process.argv.slice(2));
 
 // Uncomment this to pass the first stage
 const server = net.createServer((socket) => {
