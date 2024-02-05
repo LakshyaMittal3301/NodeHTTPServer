@@ -87,7 +87,7 @@ const server = net.createServer((socket) => {
         let response = httpObject.getResponse();
         console.log(`Response to client: ${response}`);
         socket.write(response);
-        
+
     });
     
     socket.on('error', (err) => {
